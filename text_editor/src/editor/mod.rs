@@ -1,9 +1,9 @@
-mod file;
-
 pub mod display;
+pub mod file;
 pub mod input;
 
 pub struct Editor {
+    filename: String,
     buffer: Vec<String>,
     cursor_x: usize,
     cursor_y: usize,
@@ -12,6 +12,7 @@ pub struct Editor {
 impl Editor {
     pub fn new() -> Self {
         Self {
+            filename: String::new(),
             buffer: vec![String::new()],
             cursor_x: 0,
             cursor_y: 0,

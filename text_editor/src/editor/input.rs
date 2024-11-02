@@ -23,7 +23,7 @@ pub fn handle_input(editor: &mut Editor) -> bool {
             editor.delete_char();
         }
         b'\x13' => {
-            save_to_file(&editor);
+            save_to_file(editor);
         }
         b'\x1b' => {
             let mut seq = [0; 2];
@@ -63,7 +63,7 @@ pub fn save_file_input(filename: &mut String) -> bool {
     false
 }
 
-pub fn char_input<const N: usize>() -> [u8; N] {
+fn char_input<const N: usize>() -> [u8; N] {
     let mut buf = [0; N];
     stdin().read_exact(&mut buf).unwrap();
     buf
