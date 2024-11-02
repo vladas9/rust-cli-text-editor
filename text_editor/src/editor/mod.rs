@@ -1,3 +1,5 @@
+mod file;
+
 pub mod display;
 pub mod input;
 
