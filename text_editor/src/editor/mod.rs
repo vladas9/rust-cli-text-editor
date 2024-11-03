@@ -1,7 +1,9 @@
 pub mod display;
 pub mod file;
 pub mod input;
+pub mod undo_redo;
 
+#[derive(Clone)]
 pub struct Editor {
     filename: String,
     buffer: Vec<String>,
@@ -44,10 +46,11 @@ impl Editor {
         self.cursor_y += 1;
     }
 
-    pub fn delete_char(&mut self) {
+    pub fn delete_char(&mut self) -> char {
+        let mut chr: char = '0';
         if self.cursor_x > 0 {
             let line = &mut self.buffer[self.cursor_y];
-            line.remove(self.cursor_x - 1);
+            chr = line.remove(self.cursor_x - 1);
             self.cursor_x -= 1;
         } else if self.cursor_y > 0 {
             let previous_line_length = self.buffer[self.cursor_y - 1].len();
@@ -57,7 +60,9 @@ impl Editor {
 
             self.cursor_y -= 1;
             self.cursor_x = previous_line_length;
+            chr = '\n';
         }
+        chr
     }
 
     pub fn get_cursor_position(&self) -> (usize, usize) {

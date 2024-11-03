@@ -1,15 +1,19 @@
-use super::{file::save_to_file, Editor};
+use super::{file::save_to_file, undo_redo::History, Editor};
 use std::{
     char,
     io::{stdin, stdout, Read},
 };
 use termion::raw::IntoRawMode;
 
-pub fn handle_input(editor: &mut Editor) -> bool {
+pub fn handle_input(editor: &mut Editor, history: &mut History) -> bool {
     let _stdout = stdout().into_raw_mode().unwrap();
     let buf = char_input::<1>();
+    println!("key: {:?}", buf);
     match buf[0] {
         b' '..=b'~' => {
+            if buf[0] == b' ' {
+                history.save_state(editor);
+            }
             let ch = buf[0] as char;
             editor.insert_text(&ch.to_string());
         }
@@ -17,13 +21,27 @@ pub fn handle_input(editor: &mut Editor) -> bool {
             return true;
         }
         b'\r' => {
+            history.save_state(editor);
             editor.new_line();
         }
         b'\x7F' => {
-            editor.delete_char();
+            if history.del_count == 0 {
+                history.save_state(editor);
+            }
+            history.save_state(editor);
+            history.del_count += 1;
+
+            let chr = editor.delete_char();
+            if chr != ' ' && chr != '\n' {
+                history.del_state();
+            }
         }
         b'\x13' => {
             save_to_file(editor);
+        }
+        b'\x1a' => {
+            history.undo(editor);
+            history.del_count = 0;
         }
         b'\x1b' => {
             let mut seq = [0; 2];
