@@ -5,8 +5,8 @@
 ## Features
 
 - Basic text editing capabilities (insert, delete, etc.)
-- Undo and redo functionality
-- Save to file and load from file
+- Undo functionality
+- Save and load file support
 - Lightweight and fast performance
 - Extensible architecture for future features
 
