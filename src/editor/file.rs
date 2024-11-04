@@ -58,9 +58,15 @@ pub fn load_from_file(editor: &mut Editor, path: String) {
     match file {
         Ok(file) => {
             let reader = BufReader::new(file);
-            editor.buffer.pop();
+            editor.buffer.clear();
             for line in reader.lines() {
-                editor.buffer.push(line.unwrap());
+                match line {
+                    Ok(text) => editor.buffer.push(text),
+                    Err(e) => {
+                        eprintln!("Error reading line: {}", e);
+                        process::exit(1);
+                    }
+                }
             }
             editor.filename = path;
         }

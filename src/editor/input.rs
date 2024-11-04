@@ -7,7 +7,7 @@ use termion::raw::IntoRawMode;
 
 pub fn handle_input(editor: &mut Editor, history: &mut History) -> bool {
     let _stdout = stdout().into_raw_mode().unwrap();
-    let buf = char_input::<1>();
+    let buf = char_input();
     println!("key: {:?}", buf);
     match buf[0] {
         b' '..=b'~' => {
@@ -25,11 +25,11 @@ pub fn handle_input(editor: &mut Editor, history: &mut History) -> bool {
             editor.new_line();
         }
         b'\x7F' => {
-            if history.del_count == 0 {
+            if history.delete_state {
                 history.save_state(editor);
             }
             history.save_state(editor);
-            history.del_count += 1;
+            history.delete_state = false;
 
             let chr = editor.delete_char();
             if chr != ' ' && chr != '\n' {
@@ -41,7 +41,11 @@ pub fn handle_input(editor: &mut Editor, history: &mut History) -> bool {
         }
         b'\x1a' => {
             history.undo(editor);
-            history.del_count = 0;
+            history.delete_state = true;
+        }
+        b'\x12' => {
+            history.redo(editor);
+            history.delete_state = true;
         }
         b'\x1b' => {
             let mut seq = [0; 2];
@@ -60,7 +64,7 @@ pub fn handle_input(editor: &mut Editor, history: &mut History) -> bool {
 }
 
 pub fn save_file_input(filename: &mut String) -> bool {
-    let buf = char_input::<1>();
+    let buf = char_input();
     match buf[0] {
         b' '..=b'~' => {
             let chr = char::from(buf[0]);
@@ -81,12 +85,12 @@ pub fn save_file_input(filename: &mut String) -> bool {
     false
 }
 
-fn char_input<const N: usize>() -> [u8; N] {
-    let mut buf = [0; N];
+fn char_input() -> [u8; 1] {
+    let mut buf = [0; 1];
     stdin().read_exact(&mut buf).unwrap();
     buf
 }
 
 pub fn wait_input() {
-    char_input::<1>();
+    char_input();
 }
